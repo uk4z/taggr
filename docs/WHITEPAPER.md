@@ -10,49 +10,40 @@ It operates on the public compute infrastructure powered by the [Internet Comput
 -   $name is completely ad-free and generates revenue.
 -   $name uses its revenue to reward content producers, token holders (pro-rata) and to cover storage and compute costs.
 
-## Usage Costs
 
-Each interaction with other users on $name consumes credits.
-All payments are directed to [$name's Treasury](https://dashboard.internetcomputer.org/account/dee15d98a70029163c79ace6ec9cf33b21917355f1766f44f87b4cb9f4d3b393) which holds the revenue.
-Below is a breakdown of costs.
+## General features
 
-| Function             |       credits 🔥 | Comments                                         |
-| :------------------- | ---------------: | :----------------------------------------------- |
-| New post or comment  |     `$post_cost` | Excluding hashtags                               |
-| Hashtags             |  `T * $tag_cost` | For `T` unique hashtags in a post or comment     |
-| On-chain pictures    | `B * $blob_cost` | For `B` pictures in a post or comment            |
-| Poll                 |     `$poll_cost` | For adding a poll to a post or comment           |
-| Reacting with ❤️     |              `2` | Burns `$reaction_fee` credits, adds `1` reward   |
-| Reacting with 🔥, 😆 |              `6` | Burns `$reaction_fee` credits, adds `5` rewards  |
-| Reacting with ⭐️    |             `11` | Burns `$reaction_fee` credits, adds `10` rewards |
-| Reacting with 👎     |              `3` | Burns `3` credits and rewards of post's author   |
-| New realm creation   |    `$realm_cost` | Burns `$realm_cost` credits                      |
+### Tokens
 
-Notes:
+There are different tokens running the plateform with their own usecase:
 
-1. Each response to a post increases the author's rewards by `$response_reward`.
-2. Inactive users' credits decrease by `$inactivity_penalty` per week after `$inactivity_duration_weeks` weeks of inactivity.
-3. Users with negative rewards balance don't participate in reward distributions or minting.
+- **Credits** are used to interact with others 
+- **$ICP** are used to mint credits 
+- **$name** are used to vote for proposals and weight the revenue distribution.
+- **Rewards** are used to weight the revenue distribution.
 
-## Rewards and Revenue Distribution
+Here is a little scheme to understand how they are linked:
 
--   During positive interactions, users can receive rewards from other users.
--   Rewards are converted to ICP and distributed to users every Friday.
--   Earned rewards points are converted to ICP at the ratio `$credits_per_xdr` rewards / `$xdr_in_usd` USD.
--   Additionally, users owning tokens and being active within the last `$voting_power_activity_weeks` weeks receive a share of $name's revenue proportionate to their token holdings.
+**$ICP** → **Credits** → *Interaction* → **Rewards** → *Revenue distribution*
 
-## Stalwarts
+**$name** → *Revenue distribution*
 
-Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $`$token_symbol`  balance, active during the last  `$min_stalwart_activity_weeks` consecutive weeks and possessing accounts older than `$min_stalwart_account_age_weeks` weeks.
+*Revenue distribution* → **Credits** *or* **$ICP** *or/and* **$name**
+
+
+### Stalwarts
+
+Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $$token_symbol  balance, active during the last  `$min_stalwart_activity_weeks` consecutive weeks and possessing accounts older than `$min_stalwart_account_age_weeks` weeks.
 They are considered trusted community members, authorized to carry out moderating actions and propose upgrades.
 
-## Realms
+### Realms
 
-Realms are sub-communities centered around specific topics.
-Each realm can establish its own terms and conditions, breaching which can lead to:
+Realms are sub-communities centered around specific topics. Each realm can establish its own terms and conditions including:
 
--   Flagging of the user's post to stalwarts.
--   Moving the post from a realm by the realm controller, incurring penalties.
+- a minimal **$name balance**. User without the required amount of $name are not allowed to post on the realm. 
+- a minimal **account age** (in days). User with early accounts are not allowed to post on the realm. 
+- a minimal **number of followers**. User without enough followers are not allowed to post on the realm. 
+- eviction penalty. If a user does not respect the behaviour policy set by the realm controllers. They can evict the post with a credit penalty.
 
 Upon joining a realm, users implicitly agree to its terms and conditions.
 
@@ -89,7 +80,7 @@ In both cases, participating stalwarts share rewards from the penalty fee, cappe
 ## Governance
 
 $name is governed via proposals.
-There are proposals for upgrading the main smart contract, for minting new tokens for funding & rewards and for transfering ICP out of the treasury for off-chains activities of the DAO.
+There are proposals for upgrading the main smart contract, for minting new tokens for funding & rewards and for transfering $ICP out of the treasury for off-chains activities of the DAO.
 
 A proposal succeeds if `$proposal_approval_threshold%` of users approve it or fails if `(100 - $proposal_approval_threshold)%` of users reject it.
 Only tokens of registered users active within `$voting_power_activity_weeks` weeks count as participating votes.
@@ -104,9 +95,9 @@ For any pending proposal the following holds until it gets adopted, rejected or 
 -   the $$token_symbol tokens of voters who voted on that proposal are locked and cannot be transferred;
 -   the rewards and the token minting are deferred for everyone.
 
+
 ## Tokenomics
 
-The utility of the `$token_symbol` token is the $name governance and a share in $name's revenue.
 $name has a maximal supply of `$maximum_supply` tokens.
 
 ### Supply Increase
@@ -116,32 +107,72 @@ Once the maximal supply is reached, both the weekly minting and minting proposal
 
 ### Supply Decrease
 
-When a `$token_symbol` transfer transaction gets executed, the fee of `$fee` gets burned.
-Once the maximal supply is reached, it can go below the maximum again after enough fees are burned via transfer transactions.
-In this case, the minting will be activated again.
+When a `$$token_symbol` transfer transaction gets executed, the fee of `$fee` gets burned. The amount of credits burned for platform fees is displayed in `WEEK'S REVENUE` value.
+Once the maximal supply is reached, the minting and minting proposal will resume after enough fees are burned via transfer transactions.
+    
+
 This will make the supply to keep an equilibrium around the maximal supply.
 
-### Distribution of minted tokens
+## Usage Costs and Rewards in Interactions 
 
-Currently, all users who earn rewards become eligible for receiving newly minted `$token_symbol` tokens.
-The amount of minted tokens is computed weekly according to the following algorithm:
+Each interaction with other users on $name consumes credits.
+All payments are directed to [$name's Treasury](https://dashboard.internetcomputer.org/account/dee15d98a70029163c79ace6ec9cf33b21917355f1766f44f87b4cb9f4d3b393) which holds the revenue.
+In each interaction, there is an emitter and a receiver. The cost to emit is listed below in the `credits` column. The receiver will then get (or lose *cf Reacting with 👎*) the amount of rewards in the `Rewards` column.
 
-1. For every user `U` who rewarded others, $name will mint new tokens limited by `U`'s  `$token_symbol`  balance divided by the minting ratio  `R` (see below).
-2. Assign the newly minted tokens to users (rewarded by `U`) weighted by their share of received rewards and an additional factor `F` which depends on receiver's `$token_symbol` balance:
+| Function                | Credits 🔥       | Rewards          | Comments                                         |
+| :-------------------    | ---------------: | ------:          | :----------------------------------------------- |
+| New post                |     `$post_cost` |                  |                                                  |
+| New comment             |     `$post_cost` |`$response_reward`|                                                  |
+| Add Hashtags            |  `T * $tag_cost` |                  | For `T` unique hashtags in a post or comment     |
+| Add On-chain pictures   | `B * $blob_cost` |                  | For `B` pictures in a post or comment            |
+| Add Poll                |     `$poll_cost` |                  | For adding a poll to a post or comment           |
+| Reacting with ❤️         |              `2` |              `1` | Burns `$reaction_fee` credits                    |
+| Reacting with 🔥, 😆    |              `6` |              `5` | Burns `$reaction_fee` credits                    |
+| Reacting with ⭐️        |              `11`|              `10`| Burns `$reaction_fee` credits                    |
+| Reacting with 👎        |              `3` |              `-3`| Burns `3` credits of post's author               |
+| New realm creation      |    `$realm_cost` |                  | Burns `$realm_cost` credits                      |
 
-| Receiver's $token_symbol balance | `F`    |
+Notes:
+
+1. Inactive users' credits decrease by `$inactivity_penalty` per week after `$inactivity_duration_weeks` weeks of inactivity.
+2. Users with negative rewards balance don't participate in reward distributions or minting.
+
+The revenue distibution will be explained later on. 
+
+## Revenue Distribution
+
+Every Friday, a weekly distribution occurs in different ways.
+
+### Rewards distribution
+
+Earned rewards points are converted to $ICP at the ratio `$credits_per_xdr` rewards / `$xdr_in_usd` USD. However, if the users’ credit balance is low, he will receive credits instead of $ICP to help with normie onboarding. 
+
+### $name distribution
+
+Users owning tokens and being active within the last `2` weeks receive a share of **$name's revenue** proportionate to their token holdings. The amount of **$name's revenue**  is displayed on the dashboard under `REVENUE PAID` value.
+
+All users who earn rewards become eligible for receiving newly minted `$token_symbol` tokens. The amount of minted tokens is computed weekly according to the following algorithm:
+
+1. For every user (U) who rewarded others, $name will mint new tokens limited by the user's  `$token_symbol` balance divided by the minting ratio `R` (see below).
+2. The newly minted tokens will be assigned to rewarded users (by U) weighted by their share of received rewards and an additional factor `F` which depends on receiver's `$$token_symbol` balance:
+
+| Receiver's $$token_symbol balance | `F`    |
 | -------------------------------- | ------ |
 | Below `100`                      | `1.2`  |
 | Below `250`                      | `1.15` |
 | Below `500`                      | `1.1`  |
 | Above `500`                      | `1`    |
 
-The minting ratio `R` is algorithmically computed by $name.
-It starts at `1:1` and remains at this level until `10%` of supply is minted.
-Then the ratio decreases to `2:1` for the next `10%`, further decreasing to `4:1`, and so on.
+The minting ratio `R` is algorithmically computed by $name:
+
+-   It starts at `1:1` and remains at this level until `10%` of supply is minted.
+-   Then the ratio decreases to `2:1` for the next `10%`, further decreasing to `4:1`, and so on.
+
 Hence, the last `10%` of supply will be minted at a ratio of `512:1`.
 
-### Team Tokens
+
+
+## Team Tokens
 
 `20%` of tokens are allocated to the first two users forming an informal bootstrapping team before the tokenization:
 
@@ -158,18 +189,21 @@ Vesting tokens:
 -   @mechaquan: `$vesting_tokens_m`
 -   @X: `$vesting_tokens_x`
 
-## Autonomy
+
+## Technical aspects 
+
+### Autonomy
 
 $name is designed for full autonomy, guided by decentralization.
 It autonomously creates new storage canisters when space runs out.
 $name tops up canisters with low credits using ICP from the Treasury.
 The [dashboard](/#/dashboard) provides information on system status and past events.
 
-## The Taggr Network Neuron
+### The $name Network Neuron
 
 $name DAO votes on NNS proposals with neuron [$neuron_id](http://dashboard.internetcomputer.org/neuron/$neuron_id) and doesn't follow anyone.
 
-#### Neuron Decentralization
+### Neuron Decentralization
 
 The neuron is only controlled by $name's canister as the assigned neuron's controller lacks a known secret key.
 The $name canister votes via the hot-key mechanism.
@@ -177,7 +211,7 @@ $name canister's `get_neuron_info` method confirms this:
 
     dfx canister --network ic call $canister_id get_neuron_info
 
-#### Voting
+### Voting
 
 Proposals categorized as "Governance", "Network Economics", "Replica Version Management," and "SNS & Community Fund" display as posts with polls.
 $name canister votes on these proposals after 3 days, weighted by voters' token balances.
@@ -188,7 +222,7 @@ $name DAO commits to:
 1. Attract voters to other topics over time.
 2. Find followees or vote themselves if automated rejection harms #IC.
 
-## Bots
+### Bots
 
 $name users can become bots by adding principal IDs in account settings.
 These IDs (canisters or self-authenticating) can call $name's `add_post` method in Candid format as follows:
@@ -208,9 +242,9 @@ Arguments:
 Note: #IC doesn't support messages > `2Mb`.
 The result of `add_post` contains the new post's ID or an error message.
 
-## Code and Bug Bounty
+### Code and Bug Bounty
 
-$name's [code](https://github.com/TaggrNetwork/taggr) is open source, under GPL license.
+$name's [code](https://github.com/$nameNetwork/$name) is open source, under GPL license.
 
 $name's DAO has a bug bounty program with classifications and rewards in `$token_symbol`.
 
