@@ -26,7 +26,7 @@ Here is a little scheme to understand how they are linked:
 
 **$ICP** → **Credits** → *Interaction* → **Rewards** → *Revenue distribution*
 
-**$name** → *Revenue distribution*
+**$name** → *Revenue distribution
 
 *Revenue distribution* → **Credits** *or* **$ICP** *or/and* **$name**
 
@@ -136,6 +136,8 @@ Notes:
 
 1. Inactive users' credits decrease by `$inactivity_penalty` per week after `$inactivity_duration_weeks` weeks of inactivity.
 2. Users with negative rewards balance don't participate in reward distributions or minting.
+3. To curb the inorganic behaviour, $name automatically charges excess fees for all posts above `$max_posts_per_day`  per rolling 24h interval and for all comments above  `$max_comments_per_hour` per hour.
+The fee is computed by multiplying `$excess_penalty` with the number of excessive items. If the excessive items contain images, the computed excess fee is additionally charged per image.
 
 The revenue distibution will be explained later on. 
 
