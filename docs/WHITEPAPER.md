@@ -10,40 +10,38 @@ It operates on the public compute infrastructure powered by the [Internet Comput
 -   $name is completely ad-free and generates revenue.
 -   $name uses its revenue to reward content producers, token holders (pro-rata) and to cover storage and compute costs.
 
-
 ## General features
 
 ### Tokens
 
 There are different tokens running the plateform with their own usecase:
 
-- **Credits** are used to interact with others 
-- **$ICP** are used to mint credits 
-- **$name** are used to vote for proposals and weight the revenue distribution.
-- **Rewards** are used to weight the revenue distribution.
+-   **Credits** are used to interact with others
+-   **$ICP** are used to mint credits
+-   **$name** are used to vote for proposals and weight the revenue distribution.
+-   **Rewards** are used to weight the revenue distribution.
 
 Here is a little scheme to understand how they are linked:
 
-**$ICP** → **Credits** → *Interaction* → **Rewards** → *Revenue distribution*
+**$ICP** → **Credits** → _Interaction_ → **Rewards** → _Revenue distribution_
 
-**$name** → *Revenue distribution
+**$name** → \*Revenue distribution
 
-*Revenue distribution* → **Credits** *or* **$ICP** *or/and* **$name**
-
+_Revenue distribution_ → **Credits** _or_ **$ICP** _or/and_ **$name**
 
 ### Stalwarts
 
-Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $$token_symbol  balance, active during the last  `$min_stalwart_activity_weeks` consecutive weeks and possessing accounts older than `$min_stalwart_account_age_weeks` weeks.
+Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $$token_symbol  balance, active during the last  `$min_stalwart_activity_weeks`consecutive weeks and possessing accounts older than`$min_stalwart_account_age_weeks` weeks.
 They are considered trusted community members, authorized to carry out moderating actions and propose upgrades.
 
 ### Realms
 
 Realms are sub-communities centered around specific topics. Each realm can establish its own terms and conditions including:
 
-- a minimal **$name balance**. User without the required amount of $name are not allowed to post on the realm. 
-- a minimal **account age** (in days). User with early accounts are not allowed to post on the realm. 
-- a minimal **number of followers**. User without enough followers are not allowed to post on the realm. 
-- eviction penalty. If a user does not respect the behaviour policy set by the realm controllers. They can evict the post with a credit penalty.
+-   a minimal **$name balance**. User without the required amount of $name are not allowed to post on the realm.
+-   a minimal **account age** (in days). User with early accounts are not allowed to post on the realm.
+-   a minimal **number of followers**. User without enough followers are not allowed to post on the realm.
+-   eviction penalty. If a user does not respect the behaviour policy set by the realm controllers. They can evict the post with a credit penalty.
 
 Upon joining a realm, users implicitly agree to its terms and conditions.
 
@@ -95,7 +93,6 @@ For any pending proposal the following holds until it gets adopted, rejected or 
 -   the $$token_symbol tokens of voters who voted on that proposal are locked and cannot be transferred;
 -   the rewards and the token minting are deferred for everyone.
 
-
 ## Tokenomics
 
 $name has a maximal supply of `$maximum_supply` tokens.
@@ -109,28 +106,27 @@ Once the maximal supply is reached, both the weekly minting and minting proposal
 
 When a `$$token_symbol` transfer transaction gets executed, the fee of `$fee` gets burned. The amount of credits burned for platform fees is displayed in `WEEK'S REVENUE` value.
 Once the maximal supply is reached, the minting and minting proposal will resume after enough fees are burned via transfer transactions.
-    
 
 This will make the supply to keep an equilibrium around the maximal supply.
 
-## Usage Costs and Rewards in Interactions 
+## Usage Costs and Rewards in Interactions
 
 Each interaction with other users on $name consumes credits.
 All payments are directed to [$name's Treasury](https://dashboard.internetcomputer.org/account/dee15d98a70029163c79ace6ec9cf33b21917355f1766f44f87b4cb9f4d3b393) which holds the revenue.
-In each interaction, there is an emitter and a receiver. The cost to emit is listed below in the `credits` column. The receiver will then get (or lose *cf Reacting with 👎*) the amount of rewards in the `Rewards` column.
+In each interaction, there is an emitter and a receiver. The cost to emit is listed below in the `credits` column. The receiver will then get (or lose _cf Reacting with 👎_) the amount of rewards in the `Rewards` column.
 
-| Function                | Credits 🔥       | Rewards          | Comments                                         |
-| :-------------------    | ---------------: | ------:          | :----------------------------------------------- |
-| New post                |     `$post_cost` |                  |                                                  |
-| New comment             |     `$post_cost` |`$response_reward`|                                                  |
-| Add Hashtags            |  `T * $tag_cost` |                  | For `T` unique hashtags in a post or comment     |
-| Add On-chain pictures   | `B * $blob_cost` |                  | For `B` pictures in a post or comment            |
-| Add Poll                |     `$poll_cost` |                  | For adding a poll to a post or comment           |
-| Reacting with ❤️         |              `2` |              `1` | Burns `$reaction_fee` credits                    |
-| Reacting with 🔥, 😆    |              `6` |              `5` | Burns `$reaction_fee` credits                    |
-| Reacting with ⭐️        |              `11`|              `10`| Burns `$reaction_fee` credits                    |
-| Reacting with 👎        |              `3` |              `-3`| Burns `3` credits of post's author               |
-| New realm creation      |    `$realm_cost` |                  | Burns `$realm_cost` credits                      |
+| Function              |       Credits 🔥 |            Rewards | Comments                                     |
+| :-------------------- | ---------------: | -----------------: | :------------------------------------------- |
+| New post              |     `$post_cost` |                    |                                              |
+| New comment           |     `$post_cost` | `$response_reward` |                                              |
+| Add Hashtags          |  `T * $tag_cost` |                    | For `T` unique hashtags in a post or comment |
+| Add On-chain pictures | `B * $blob_cost` |                    | For `B` pictures in a post or comment        |
+| Add Poll              |     `$poll_cost` |                    | For adding a poll to a post or comment       |
+| Reacting with ❤️      |              `2` |                `1` | Burns `$reaction_fee` credits                |
+| Reacting with 🔥, 😆  |              `6` |                `5` | Burns `$reaction_fee` credits                |
+| Reacting with ⭐️     |             `11` |               `10` | Burns `$reaction_fee` credits                |
+| Reacting with 👎      |              `3` |               `-3` | Burns `3` credits of post's author           |
+| New realm creation    |    `$realm_cost` |                    | Burns `$realm_cost` credits                  |
 
 Notes:
 
@@ -139,7 +135,7 @@ Notes:
 3. To curb the inorganic behaviour, $name automatically charges excess fees for all posts above `$max_posts_per_day`  per rolling 24h interval and for all comments above  `$max_comments_per_hour` per hour.
 The fee is computed by multiplying `$excess_penalty` with the number of excessive items. If the excessive items contain images, the computed excess fee is additionally charged per image.
 
-The revenue distibution will be explained later on. 
+The revenue distibution will be explained later on.
 
 ## Revenue Distribution
 
@@ -147,23 +143,23 @@ Every Friday, a weekly distribution occurs in different ways.
 
 ### Rewards distribution
 
-Earned rewards points are converted to $ICP at the ratio `$credits_per_xdr` rewards / `$xdr_in_usd` USD. However, if the users’ credit balance is low, he will receive credits instead of $ICP to help with normie onboarding. 
+Earned rewards points are converted to $ICP at the ratio `$credits_per_xdr`rewards /`$xdr_in_usd` USD. However, if the users’ credit balance is low, he will receive credits instead of $ICP to help with normie onboarding.
 
 ### $name distribution
 
-Users owning tokens and being active within the last `2` weeks receive a share of **$name's revenue** proportionate to their token holdings. The amount of **$name's revenue**  is displayed on the dashboard under `REVENUE PAID` value.
+Users owning tokens and being active within the last `2` weeks receive a share of **$name's revenue** proportionate to their token holdings. The amount of **$name's revenue** is displayed on the dashboard under `REVENUE PAID` value.
 
 All users who earn rewards become eligible for receiving newly minted `$token_symbol` tokens. The amount of minted tokens is computed weekly according to the following algorithm:
 
-1. For every user (U) who rewarded others, $name will mint new tokens limited by the user's  `$token_symbol` balance divided by the minting ratio `R` (see below).
+1. For every user (U) who rewarded others, $name will mint new tokens limited by the user's  `$token_symbol`balance divided by the minting ratio`R` (see below).
 2. The newly minted tokens will be assigned to rewarded users (by U) weighted by their share of received rewards and an additional factor `F` which depends on receiver's `$$token_symbol` balance:
 
 | Receiver's $$token_symbol balance | `F`    |
-| -------------------------------- | ------ |
-| Below `100`                      | `1.2`  |
-| Below `250`                      | `1.15` |
-| Below `500`                      | `1.1`  |
-| Above `500`                      | `1`    |
+| --------------------------------- | ------ |
+| Below `100`                       | `1.2`  |
+| Below `250`                       | `1.15` |
+| Below `500`                       | `1.1`  |
+| Above `500`                       | `1`    |
 
 The minting ratio `R` is algorithmically computed by $name:
 
@@ -171,8 +167,6 @@ The minting ratio `R` is algorithmically computed by $name:
 -   Then the ratio decreases to `2:1` for the next `10%`, further decreasing to `4:1`, and so on.
 
 Hence, the last `10%` of supply will be minted at a ratio of `512:1`.
-
-
 
 ## Team Tokens
 
@@ -191,8 +185,7 @@ Vesting tokens:
 -   @mechaquan: `$vesting_tokens_m`
 -   @X: `$vesting_tokens_x`
 
-
-## Technical aspects 
+## Technical aspects
 
 ### Autonomy
 
