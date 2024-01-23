@@ -242,7 +242,6 @@ The result of `add_post` contains the new post's ID or an error message.
 
 $name's [code](https://github.com/TaggrNetwork/taggr) is open source, under GPL license.
 
-
 $name's DAO has a bug bounty program with classifications and rewards in `$token_symbol`.
 
 | SEV | DESCRIPTION                                                                                                                           | BOUNTY |
