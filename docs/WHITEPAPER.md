@@ -94,7 +94,6 @@ For any pending proposal the following holds until it gets adopted, rejected or 
 -   the $$token_symbol tokens of voters who voted on that proposal are locked and cannot be transferred;
 -   the rewards and the token minting are deferred for everyone.
 
-
 ## Tokenomics
 
 $name has a maximal supply of `$maximum_supply` tokens.
