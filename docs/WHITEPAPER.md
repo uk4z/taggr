@@ -31,17 +31,18 @@ _Revenue distribution_ → **Credits** _or_ **$ICP** _or/and_ **$name**
 
 ### Stalwarts
 
-Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $`$token_symbol`  balance, active during the last  `$min_stalwart_activity_weeks` consecutive weeks and possessing accounts older than `$min_stalwart_account_age_weeks` weeks.
+Stalwarts represent the union of top `$stalwart_percentage%` of users with the highest $$token_symbol  balance, active during the last  `$min_stalwart_activity_weeks`consecutive weeks and possessing accounts older than`$min_stalwart_account_age_weeks` weeks.
+
 They are considered trusted community members, authorized to carry out moderating actions and propose upgrades.
 
 ### Realms
 
 Realms are sub-communities centered around specific topics. Each realm can establish its own terms and conditions including:
 
-- a minimal **$name balance**. User without the required amount of $name are not allowed to post on the realm. 
-- a minimal **account age** (in days). User with early accounts are not allowed to post on the realm. 
-- a minimal **number of followers**. User without enough followers are not allowed to post on the realm. 
-- eviction penalty. If a user does not respect the behaviour policy set by the realm controllers. They can evict the post with a credit penalty.
+-   a minimal **$name balance**. User without the required amount of $name are not allowed to post on the realm.
+-   a minimal **account age** (in days). User with early accounts are not allowed to post on the realm.
+-   a minimal **number of followers**. User without enough followers are not allowed to post on the realm.
+-   eviction penalty. If a user does not respect the behaviour policy set by the realm controllers. They can evict the post with a credit penalty.
 
 Upon joining a realm, users implicitly agree to its terms and conditions.
 
@@ -93,7 +94,6 @@ For any pending proposal the following holds until it gets adopted, rejected or 
 -   the $$token_symbol tokens of voters who voted on that proposal are locked and cannot be transferred;
 -   the rewards and the token minting are deferred for everyone.
 
-
 ## Tokenomics
 
 $name has a maximal supply of `$maximum_supply` tokens.
@@ -110,25 +110,24 @@ Once the maximal supply is reached, the minting and minting proposal will resume
 
 This will make the supply to keep an equilibrium around the maximal supply.
 
-## Usage Costs and Rewards in Interactions 
+## Usage Costs and Rewards in Interactions
 
 Each interaction with other users on $name consumes credits.
 All payments are directed to [$name's Treasury](https://dashboard.internetcomputer.org/account/dee15d98a70029163c79ace6ec9cf33b21917355f1766f44f87b4cb9f4d3b393) which holds the revenue.
-In each interaction, there is an emitter and a receiver. The cost to emit is listed below in the `credits` column. The receiver will then get (or lose *cf Reacting with 👎*) the amount of rewards in the `Rewards` column.
+In each interaction, there is an emitter and a receiver. The cost to emit is listed below in the `credits` column. The receiver will then get (or lose _cf Reacting with 👎_) the amount of rewards in the `Rewards` column.
 
-| Function                | Credits 🔥       | Rewards          | Comments                                         |
-| :-------------------    | ---------------: | ------:          | :----------------------------------------------- |
-| New post                |     `$post_cost` |                  |                                                  |
-| New comment             |     `$post_cost` |`$response_reward`|                                                  |
-| Add Hashtags            |  `T * $tag_cost` |                  | For `T` unique hashtags in a post or comment     |
-| Add On-chain pictures   | `B * $blob_cost` |                  | For `B` pictures in a post or comment            |
-| Add Poll                |     `$poll_cost` |                  | For adding a poll to a post or comment           |
-| Reacting with ❤️         |              `2` |              `1` | Burns `$reaction_fee` credits                    |
-| Reacting with 🔥, 😆    |              `6` |              `5` | Burns `$reaction_fee` credits                    |
-| Reacting with ⭐️        |              `11`|              `10`| Burns `$reaction_fee` credits                    |
-| Reacting with 👎        |              `3` |              `-3`| Burns `3` credits of post's author               |
-| New realm creation      |    `$realm_cost` |                  | Burns `$realm_cost` credits                      |
->>>>>>> ededa4b (I modified the whitepaper to match my own understanding of TAGGR and to clarify the point of misunderstanding. It might be inacurrate at some point.)
+| Function              |       Credits 🔥 |            Rewards | Comments                                     |
+| :-------------------- | ---------------: | -----------------: | :------------------------------------------- |
+| New post              |     `$post_cost` |                    |                                              |
+| New comment           |     `$post_cost` | `$response_reward` |                                              |
+| Add Hashtags          |  `T * $tag_cost` |                    | For `T` unique hashtags in a post or comment |
+| Add On-chain pictures | `B * $blob_cost` |                    | For `B` pictures in a post or comment        |
+| Add Poll              |     `$poll_cost` |                    | For adding a poll to a post or comment       |
+| Reacting with ❤️      |              `2` |                `1` | Burns `$reaction_fee` credits                |
+| Reacting with 🔥, 😆  |              `6` |                `5` | Burns `$reaction_fee` credits                |
+| Reacting with ⭐️     |             `11` |               `10` | Burns `$reaction_fee` credits                |
+| Reacting with 👎      |              `3` |               `-3` | Burns `3` credits of post's author           |
+| New realm creation    |    `$realm_cost` |                    | Burns `$realm_cost` credits                  |
 
 Notes:
 
@@ -145,23 +144,23 @@ Every Friday, a weekly distribution occurs in different ways.
 
 ### Rewards distribution
 
-Earned rewards points are converted to $ICP at the ratio `$credits_per_xdr` rewards / `$xdr_in_usd` USD. However, if the users’ credit balance is low, he will receive credits instead of $ICP to help with normie onboarding. 
+Earned rewards points are converted to $ICP at the ratio `$credits_per_xdr`rewards /`$xdr_in_usd` USD. However, if the users’ credit balance is low, he will receive credits instead of $ICP to help with normie onboarding.
 
 ### $name distribution
 
-Users owning tokens and being active within the last `2` weeks receive a share of **$name's revenue** proportionate to their token holdings. The amount of **$name's revenue**  is displayed on the dashboard under `REVENUE PAID` value.
+Users owning tokens and being active within the last `2` weeks receive a share of **$name's revenue** proportionate to their token holdings. The amount of **$name's revenue** is displayed on the dashboard under `REVENUE PAID` value.
 
 All users who earn rewards become eligible for receiving newly minted `$token_symbol` tokens. The amount of minted tokens is computed weekly according to the following algorithm:
 
-1. For every user (U) who rewarded others, $name will mint new tokens limited by the user's  `$token_symbol` balance divided by the minting ratio `R` (see below).
+1. For every user (U) who rewarded others, $name will mint new tokens limited by the user's  `$token_symbol`balance divided by the minting ratio`R` (see below).
 2. The newly minted tokens will be assigned to rewarded users (by U) weighted by their share of received rewards and an additional factor `F` which depends on receiver's `$$token_symbol` balance:
 
 | Receiver's $$token_symbol balance | `F`    |
-| -------------------------------- | ------ |
-| Below `100`                      | `1.2`  |
-| Below `250`                      | `1.15` |
-| Below `500`                      | `1.1`  |
-| Above `500`                      | `1`    |
+| --------------------------------- | ------ |
+| Below `100`                       | `1.2`  |
+| Below `250`                       | `1.15` |
+| Below `500`                       | `1.1`  |
+| Above `500`                       | `1`    |
 
 The minting ratio `R` is algorithmically computed by $name:
 
@@ -187,8 +186,7 @@ Vesting tokens:
 -   @mechaquan: `$vesting_tokens_m`
 -   @X: `$vesting_tokens_x`
 
-
-## Technical aspects 
+## Technical aspects
 
 ### Autonomy
 
@@ -242,7 +240,8 @@ The result of `add_post` contains the new post's ID or an error message.
 
 ### Code and Bug Bounty
 
-$name's [code](https://github.com/$nameNetwork/$name) is open source, under GPL license.
+$name's [code](https://github.com/TaggrNetwork/taggr) is open source, under GPL license.
+
 
 $name's DAO has a bug bounty program with classifications and rewards in `$token_symbol`.
 
