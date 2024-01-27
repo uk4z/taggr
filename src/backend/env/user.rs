@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 pub type UserId = u64;
 
-#[derive(Clone, Default, Serialize, Deserialize)]
+#[derive(Default, Serialize, Deserialize)]
 pub struct Filters {
     pub users: BTreeSet<UserId>,
     pub tags: BTreeSet<String>,
@@ -35,7 +35,6 @@ pub enum Notification {
 }
 
 // This struct will hold user's new post until it's saved.
-#[derive(Clone)]
 pub struct Draft {
     pub body: String,
     pub realm: Option<String>,
@@ -43,13 +42,14 @@ pub struct Draft {
     pub blobs: Vec<(String, Blob)>,
 }
 
-#[derive(Clone, Default, Serialize, Deserialize)]
+#[derive(Default, PartialEq, Serialize, Deserialize)]
 pub struct UserFilter {
     age_days: u64,
     safe: bool,
     balance: Token,
-    #[serde(default)]
     num_followers: usize,
+    #[serde(default)]
+    downvotes: usize,
 }
 
 impl UserFilter {
@@ -59,16 +59,17 @@ impl UserFilter {
             safe,
             balance,
             num_followers,
-            ..
+            downvotes,
         } = filter;
-        self.age_days >= *age_days
+        (*downvotes == 0 || self.downvotes <= *downvotes)
+            && self.age_days >= *age_days
             && (self.safe || !*safe)
             && self.balance >= *balance
             && self.num_followers >= *num_followers
     }
 }
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Serialize, Deserialize)]
 pub struct User {
     pub id: UserId,
     pub name: String,
@@ -103,10 +104,12 @@ pub struct User {
     pub karma_donations: BTreeMap<UserId, Credits>,
     pub previous_names: Vec<String>,
     pub governance: bool,
-    // TODO: remove
-    #[serde(skip)]
-    pub notification_filter: UserFilter,
+
     pub notifications: BTreeMap<u64, (Notification, bool)>,
+    #[serde(default)]
+    pub downvotes: BTreeMap<UserId, Time>,
+    #[serde(default)]
+    pub show_posts_in_realms: bool,
 }
 
 impl User {
@@ -121,6 +124,7 @@ impl User {
             safe: !self.controversial(),
             balance: self.balance / token::base(),
             num_followers: self.followers.len(),
+            downvotes: self.downvotes.len(),
         }
     }
 
@@ -168,7 +172,8 @@ impl User {
             cold_wallet: None,
             cold_balance: 0,
             governance: true,
-            notification_filter: Default::default(),
+            downvotes: Default::default(),
+            show_posts_in_realms: true,
         }
     }
 
@@ -247,6 +252,9 @@ impl User {
     }
 
     fn insert_notifications(&mut self, notification: Notification) {
+        if self.is_bot() {
+            return;
+        }
         self.messages += 1;
         self.notifications
             .insert(self.messages, (notification, false));
@@ -292,6 +300,13 @@ impl User {
                     !post.is_deleted()
                         && post.parent.is_none()
                         && !post.matches_filters(&self.filters)
+                        && post
+                            .realm
+                            .as_ref()
+                            .map(|realm_id| {
+                                self.show_posts_in_realms || self.realms.contains(realm_id)
+                            })
+                            .unwrap_or(true)
                 })
                 .filter(move |post| {
                     if self.followees.contains(&post.user) {
@@ -445,6 +460,7 @@ impl User {
         settings: BTreeMap<String, String>,
         filter: UserFilter,
         governance: bool,
+        show_posts_in_realms: bool,
     ) -> Result<(), String> {
         mutate(|state| {
             if let Some(user) = state.principal_to_user_mut(caller) {
@@ -454,6 +470,7 @@ impl User {
                 user.settings = settings;
                 user.governance = governance;
                 user.filters.noise = filter;
+                user.show_posts_in_realms = show_posts_in_realms;
             }
             Ok(())
         })
@@ -507,7 +524,11 @@ impl User {
         })
     }
 
-    pub fn mintable_tokens(&self, state: &State) -> Box<dyn Iterator<Item = (UserId, Token)> + '_> {
+    pub fn mintable_tokens(
+        &self,
+        state: &State,
+        user_shares: u64,
+    ) -> Box<dyn Iterator<Item = (UserId, Token)> + '_> {
         if self.controversial() {
             return Box::new(std::iter::empty());
         }
@@ -526,6 +547,7 @@ impl User {
                 .min(donated_karma)
                 .min(CONFIG.max_spendable_tokens)
         } / ratio;
+        let spendable_tokens_per_user = spendable_tokens / user_shares;
 
         let priority_factor = |user_id| {
             let balance = state
@@ -570,7 +592,8 @@ impl User {
         Box::new(shares.into_iter().map(move |(user_id, share)| {
             (
                 user_id,
-                (share as f32 / total as f32 * spendable_tokens as f32) as Token,
+                spendable_tokens_per_user
+                    .min((share as f32 / total as f32 * spendable_tokens as f32) as Token),
             )
         }))
     }
@@ -591,10 +614,12 @@ mod tests {
             age_days: 12,
             safe: false,
             balance: 333,
-            num_followers: 34
+            num_followers: 34,
+            downvotes: 0,
         }
         .passes(&UserFilter {
             age_days: 7,
+            downvotes: 0,
             safe: true,
             balance: 1,
             num_followers: 0
@@ -602,6 +627,7 @@ mod tests {
 
         assert!(UserFilter {
             age_days: 12,
+            downvotes: 0,
             safe: false,
             balance: 333,
             num_followers: 34
@@ -609,12 +635,14 @@ mod tests {
         .passes(&UserFilter {
             age_days: 7,
             safe: false,
+            downvotes: 0,
             balance: 1,
             num_followers: 0
         }));
 
         assert!(UserFilter {
             age_days: 12,
+            downvotes: 0,
             safe: true,
             balance: 333,
             num_followers: 34
@@ -622,6 +650,7 @@ mod tests {
         .passes(&UserFilter {
             age_days: 7,
             safe: true,
+            downvotes: 0,
             balance: 1,
             num_followers: 0
         }));
@@ -629,12 +658,14 @@ mod tests {
         assert!(!UserFilter {
             age_days: 12,
             safe: true,
+            downvotes: 0,
             balance: 333,
             num_followers: 34
         }
         .passes(&UserFilter {
             age_days: 7,
             safe: false,
+            downvotes: 0,
             balance: 777,
             num_followers: 0
         }));
@@ -642,12 +673,29 @@ mod tests {
         assert!(UserFilter {
             age_days: 12,
             safe: true,
+            downvotes: 0,
             balance: 333,
             num_followers: 34
         }
         .passes(&UserFilter {
             age_days: 7,
             safe: false,
+            downvotes: 0,
+            balance: 1,
+            num_followers: 0
+        }));
+
+        assert!(!UserFilter {
+            age_days: 12,
+            safe: true,
+            downvotes: 7,
+            balance: 333,
+            num_followers: 34
+        }
+        .passes(&UserFilter {
+            age_days: 7,
+            safe: false,
+            downvotes: 5,
             balance: 1,
             num_followers: 0
         }));
@@ -679,8 +727,7 @@ mod tests {
             .users
             .get(&donor_id)
             .unwrap()
-            .clone()
-            .mintable_tokens(state)
+            .mintable_tokens(state, 1)
             .collect::<BTreeMap<_, _>>();
         assert_eq!(mintable_tokens.len(), 4);
 
@@ -703,8 +750,7 @@ mod tests {
             .users
             .get(&donor_id)
             .unwrap()
-            .clone()
-            .mintable_tokens(state)
+            .mintable_tokens(state, 1)
             .collect::<BTreeMap<_, _>>();
         assert_eq!(
             mintable_tokens.get(&u1).unwrap(),
@@ -738,8 +784,7 @@ mod tests {
             .users
             .get(&donor_id)
             .unwrap()
-            .clone()
-            .mintable_tokens(state)
+            .mintable_tokens(state, 1)
             .collect::<BTreeMap<_, _>>();
         assert_eq!(mintable_tokens.len(), 4);
 
@@ -752,6 +797,41 @@ mod tests {
             mintable_tokens.values().sum::<u64>(),
             60000 / state.minting_ratio() - 1
         );
+    }
+
+    #[test]
+    fn test_mintable_tokens_with_user_share() {
+        let state = &mut State::default();
+        let donor_id = create_user(state, pr(0));
+        let u1 = create_user(state, pr(1));
+        let u2 = create_user(state, pr(2));
+        let u3 = create_user(state, pr(3));
+        let u4 = create_user(state, pr(4));
+        insert_balance(state, pr(255), 20000000);
+        insert_balance(state, pr(0), 600000); // spendable tokens
+        insert_balance(state, pr(1), 9900);
+        insert_balance(state, pr(2), 24900);
+        insert_balance(state, pr(3), 49900);
+        insert_balance(state, pr(4), 100000);
+        assert_eq!(state.minting_ratio(), 4);
+        let bob = state.users.get_mut(&donor_id).unwrap();
+
+        bob.karma_donations.insert(u1, 330);
+        bob.karma_donations.insert(u2, 660);
+        bob.karma_donations.insert(u3, 990);
+        bob.karma_donations.insert(u4, 1020);
+        let mintable_tokens = state
+            .users
+            .get(&donor_id)
+            .unwrap()
+            .mintable_tokens(state, 10)
+            .collect::<BTreeMap<_, _>>();
+        assert_eq!(mintable_tokens.len(), 4);
+
+        assert_eq!(mintable_tokens.get(&u1).unwrap(), &7500);
+        assert_eq!(mintable_tokens.get(&u2).unwrap(), &7500);
+        assert_eq!(mintable_tokens.get(&u3).unwrap(), &7500);
+        assert_eq!(mintable_tokens.get(&u4).unwrap(), &7500);
     }
 
     #[test]

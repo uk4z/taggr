@@ -25,10 +25,14 @@ pub struct Config {
 
     pub max_age_hot_post_days: u64,
 
+    pub downvote_counting_period_days: u64,
+
     pub credits_per_xdr: u64,
 
     pub individual_minting_threshold_percentage: u64,
     pub minting_threshold_percentage: u64,
+
+    pub active_user_share_for_minting_promille: u32,
 
     pub min_treasury_balance_xdrs: u64,
 
@@ -58,7 +62,9 @@ pub struct Config {
 
     pub realm_revenue_percentage: u32,
 
-    pub min_cycle_balance_main: u64,
+    pub main_canister_min_cycle_balance: u64,
+
+    pub child_canister_min_cycle_balance: u64,
 
     pub max_bucket_size: u64,
 
@@ -180,7 +186,11 @@ pub const CONFIG: &Config = &Config {
     individual_minting_threshold_percentage: 1,
     minting_threshold_percentage: 5,
 
+    active_user_share_for_minting_promille: 10,
+
     max_age_hot_post_days: 2,
+
+    downvote_counting_period_days: 7,
 
     max_credits_mint_kilos: 10,
 
@@ -215,7 +225,8 @@ pub const CONFIG: &Config = &Config {
 
     maximum_supply: 100_000_000,
 
-    min_cycle_balance_main: 2 * ICP_CYCLES_PER_XDR,
+    main_canister_min_cycle_balance: 10 * ICP_CYCLES_PER_XDR,
+    child_canister_min_cycle_balance: 10 * ICP_CYCLES_PER_XDR,
 
     num_hot_posts: 10000,
 

@@ -1,6 +1,10 @@
 use std::cmp::Reverse;
+use std::collections::BTreeMap;
 
-use crate::env::token::{account, Token};
+use crate::env::{
+    token::{account, Token},
+    user::UserFilter,
+};
 
 use super::*;
 use candid::Principal;
@@ -33,7 +37,7 @@ fn donors() {
             .map(|user| {
                 (
                     user.id,
-                    user.mintable_tokens(state)
+                    user.mintable_tokens(state, 1)
                         .map(|(_, tokens)| tokens)
                         .sum::<Token>(),
                 )
@@ -143,10 +147,37 @@ fn sorted_realms(
     state: &State,
     order: String,
 ) -> Box<dyn Iterator<Item = (&'_ String, &'_ Realm)> + '_> {
+    let realm_vp = read(|state| {
+        state
+            .users
+            .values()
+            .fold(BTreeMap::default(), |mut acc, user| {
+                let vp = (user.total_balance(state) as f32).sqrt() as u64;
+                user.realms.iter().for_each(|realm_id| {
+                    acc.entry(realm_id.clone())
+                        .and_modify(|realm_vp| *realm_vp += vp)
+                        .or_insert(vp);
+                });
+                acc
+            })
+    });
     let mut realms = state.realms.iter().collect::<Vec<_>>();
     if order != "name" {
-        realms.sort_unstable_by_key(|(_, realm)| match order.as_str() {
-            "popularity" => Reverse(realm.num_posts * realm.num_members),
+        realms.sort_unstable_by_key(|(realm_id, realm)| match order.as_str() {
+            "popularity" => {
+                let realm_vp = realm_vp.get(realm_id.as_str()).copied().unwrap_or(1);
+                let whitelisted = if realm.whitelist.is_empty() {
+                    1
+                } else {
+                    realm_vp
+                };
+                let moderation = if realm.filter == UserFilter::default() {
+                    1
+                } else {
+                    realm_vp
+                };
+                Reverse(realm.num_posts * realm.num_members * whitelisted * moderation)
+            }
             _ => Reverse(realm.last_update),
         });
     }
@@ -172,7 +203,7 @@ fn realms_data() {
                         ),
                     )
                 })
-                .collect::<std::collections::BTreeMap<_, _>>(),
+                .collect::<BTreeMap<_, _>>(),
         );
     });
 }
@@ -201,7 +232,7 @@ fn realms() {
 fn user_posts() {
     let (handle, page, offset): (String, usize, PostId) = parse(&arg_data_raw());
     read(|state| {
-        resolve_handle(Some(handle)).map(|user| {
+        resolve_handle(state, Some(&handle)).map(|user| {
             reply(
                 user.posts(state, offset)
                     .skip(CONFIG.feed_page_size * page)
@@ -216,7 +247,7 @@ fn user_posts() {
 fn rewarded_posts() {
     let (handle, page, offset): (String, usize, PostId) = parse(&arg_data_raw());
     read(|state| {
-        resolve_handle(Some(handle)).map(|user| {
+        resolve_handle(state, Some(&handle)).map(|user| {
             reply(
                 user.posts(state, offset)
                     .filter(|post| !post.reactions.is_empty())
@@ -248,19 +279,27 @@ fn user_tags() {
 fn user() {
     let input: Vec<String> = parse(&arg_data_raw());
     let own_profile_fetch = input.is_empty();
-    reply(resolve_handle(input.into_iter().next()).map(|mut user| {
-        user.cold_balance = user
+    mutate(|state| {
+        let handle = input.into_iter().next();
+        let user = match resolve_handle(state, handle.as_ref()) {
+            Some(value) => value,
+            _ => return reply(None as Option<User>),
+        };
+        let user_id = user.id;
+        let user_cold_balance = user
             .cold_wallet
-            .and_then(|principal| read(|state| state.balances.get(&account(principal)).copied()))
+            .and_then(|principal| state.balances.get(&account(principal)).copied())
             .unwrap_or_default();
+        let user = state.users.get_mut(&user_id).expect("user not found");
+        user.cold_balance = user_cold_balance;
         if own_profile_fetch {
             user.accounting.clear();
         } else {
             user.bookmarks.clear();
             user.notifications.clear();
         }
-        user
-    }));
+        reply(user);
+    });
 }
 
 #[export_name = "canister_query invites"]
@@ -302,8 +341,7 @@ fn journal() {
                         })
                         .skip(page * CONFIG.feed_page_size)
                         .take(CONFIG.feed_page_size)
-                        .cloned()
-                        .collect::<Vec<Post>>()
+                        .collect::<Vec<_>>()
                 })
                 .unwrap_or_default(),
         );
@@ -343,7 +381,13 @@ fn hot_posts() {
 #[export_name = "canister_query realms_posts"]
 fn realms_posts() {
     let (page, offset): (usize, PostId) = parse(&arg_data_raw());
-    read(|state| reply(state.realms_posts(caller(), page, offset)));
+    read(|state| {
+        reply(
+            state
+                .realms_posts(caller(), page, offset)
+                .collect::<Vec<_>>(),
+        )
+    });
 }
 
 #[export_name = "canister_query last_posts"]
@@ -370,8 +414,7 @@ fn last_posts() {
                 })
                 .skip(page * CONFIG.feed_page_size)
                 .take(CONFIG.feed_page_size)
-                .cloned()
-                .collect::<Vec<Post>>(),
+                .collect::<Vec<_>>(),
         )
     });
 }
@@ -384,8 +427,7 @@ fn posts_by_tags() {
         reply(
             state
                 .posts_by_tags(caller(), optional(realm), tags, users, page, offset)
-                .into_iter()
-                .collect::<Vec<Post>>(),
+                .collect::<Vec<_>>(),
         )
     });
 }
@@ -409,8 +451,7 @@ fn thread() {
             state
                 .thread(id)
                 .filter_map(|id| Post::get(state, &id))
-                .cloned()
-                .collect::<Vec<Post>>(),
+                .collect::<Vec<_>>(),
         )
     })
 }
@@ -488,4 +529,11 @@ fn stable_mem_read(page: u64) -> Vec<(u64, Blob)> {
     }
     api::stable::stable64_read(offset, &mut buf);
     vec![(page, ByteBuf::from(buf))]
+}
+
+fn resolve_handle<'a>(state: &'a State, handle: Option<&'a String>) -> Option<&'a User> {
+    match handle {
+        Some(handle) => state.user(handle),
+        None => Some(state.principal_to_user(caller())?),
+    }
 }

@@ -131,10 +131,10 @@ In each interaction, there is an emitter and a receiver. The cost to emit is lis
 
 Notes:
 
-1. Inactive users' credits decrease by `$inactivity_penalty` per week after `$inactivity_duration_weeks` weeks of inactivity.
-2. Users with negative rewards balance don't participate in reward distributions or minting.
-3. To curb the inorganic behaviour, $name automatically charges excess fees for all posts above `$max_posts_per_day`  per rolling 24h interval and for all comments above  `$max_comments_per_hour` per hour.
-The fee is computed by multiplying `$excess_penalty` with the number of excessive items. If the excessive items contain images, the computed excess fee is additionally charged per image.
+1. For every user `U` who rewarded others, determine the maximal amount of donatable tokens capped by `U`'s `$token_symbol` balance divided by the minting ratio `R` (see below).
+2. Compute the maximum amount of tokens assignable from `U` to a single rewarded user by dividing `U`'s mintable tokens by `$active_user_share_for_minting_promille%` of all active users of the last week.
+3. Mint new tokens to users (rewarded by `U`) capped by the amount computed in the previous step and weighted by their share of received rewards and an additional factor `F` which depends on receiver's `$token_symbol` balance:
+
 
 The revenue distibution will be explained later on.
 
